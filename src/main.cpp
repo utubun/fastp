@@ -434,7 +434,7 @@ int main(int argc, char* argv[]){
 
     time_t t1 = time(NULL);
 
-    bool supportEvaluation = false // !opt.inputFromSTDIN && opt.in1!="/dev/stdin";
+    bool supportEvaluation = false; // !opt.inputFromSTDIN && opt.in1!="/dev/stdin";
 
     Evaluator eva(&opt);
     if(supportEvaluation) {
