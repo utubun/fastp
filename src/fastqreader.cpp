@@ -32,7 +32,13 @@ SOFTWARE.
 #define IGZIP_IN_BUF_SIZE (1<<22)
 #define GZIP_HEADER_BYTES_REQ (1<<16)
 
+static int global_reader_count = 0;
+
 FastqReader::FastqReader(string filename, bool hasQuality, bool phred64, int bgzfThreadBudget){
+	global_reader_count++;
+	if (global_reader_count > 1) {
+		cerr << "[DEBUG] SECOND READER DETECTED. This will brak the pipe" << endl;
+	}
 	mFilename = filename;
 	mZipped = false;
 	mFile = NULL;
@@ -57,6 +63,7 @@ FastqReader::FastqReader(string filename, bool hasQuality, bool phred64, int bgz
 }
 
 FastqReader::~FastqReader(){
+
 	if (mBgzfReader) {
 		delete mBgzfReader;
 		mBgzfReader = NULL;
