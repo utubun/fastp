@@ -173,19 +173,22 @@ void FastqReader::init(){
 			error_exit("Failed to open file: " + mFilename);
 		}
 
-       // BGZF detection disabled for FIFO/named pipe compatibility
+	   // BGZF detection disabled for FIFO/named pipe compatibility
 
-		isal_gzip_header_init(&mGzipHeader);
-		isal_inflate_init(&mGzipState);
-		mGzipState.crc_flag = ISAL_GZIP_NO_HDR_VER;
-		mGzipState.next_in = mGzipInputBuffer;
-		mGzipState.avail_in = fread(mGzipState.next_in, 1, mGzipInputBufferSize, mFile);
-		mGzipInputUsedBytes += mGzipState.avail_in;
-		int ret = isal_read_gzip_header(&mGzipState, &mGzipHeader);
-		if (ret != ISAL_DECOMP_OK) {
-			error_exit("igzip: Error invalid gzip header found: "  + mFilename);
-		}
-		mZipped = true;
+	   fprintf(stderr, "[fastp-debug] Opening file: %s\n", mFilename.c_str());
+	   isal_gzip_header_init(&mGzipHeader);
+	   isal_inflate_init(&mGzipState);
+	   mGzipState.crc_flag = ISAL_GZIP_NO_HDR_VER;
+	   mGzipState.next_in = mGzipInputBuffer;
+	   mGzipState.avail_in = fread(mGzipState.next_in, 1, mGzipInputBufferSize, mFile);
+	   fprintf(stderr, "[fastp-debug] First fread() read %zu bytes from %s\n", (size_t)mGzipState.avail_in, mFilename.c_str());
+	   mGzipInputUsedBytes += mGzipState.avail_in;
+	   int ret = isal_read_gzip_header(&mGzipState, &mGzipHeader);
+	   if (ret != ISAL_DECOMP_OK) {
+		   fprintf(stderr, "[fastp-debug] isal_read_gzip_header failed after reading %zu bytes from %s\n", (size_t)mGzipState.avail_in, mFilename.c_str());
+		   error_exit("igzip: Error invalid gzip header found: "  + mFilename);
+	   }
+	   mZipped = true;
 	}
 	else {
 		if(mFilename == "/dev/stdin") {
