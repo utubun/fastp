@@ -14,17 +14,6 @@
 static const int BGZF_HEADER_SIZE = 18;
 static const int BGZF_MAX_BLOCK_SIZE = 65536;
 
-static inline bool isBgzf(FILE* fp) {
-    unsigned char h[18];
-    long pos = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-    size_t n = fread(h, 1, 18, fp);
-    fseek(fp, pos, SEEK_SET);
-    if (n < 18) return false;
-    return h[0]==0x1f && h[1]==0x8b && h[2]==0x08 && (h[3]&0x04)
-        && h[12]==0x42 && h[13]==0x43 && (h[14]|(h[15]<<8))==2;
-}
-
 static inline uint32_t bgzfBlockSize(const unsigned char* h) {
     if (h[0]!=0x1f || h[1]!=0x8b) return 0;
     return (uint32_t)(h[16] | (h[17]<<8)) + 1;

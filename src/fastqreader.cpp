@@ -173,14 +173,7 @@ void FastqReader::init(){
 			error_exit("Failed to open file: " + mFilename);
 		}
 
-		// Check for BGZF format — use parallel decompression if detected
-		if (isBgzf(mFile)) {
-			fseek(mFile, 0, SEEK_SET);
-			mBgzfReader = new BgzfMtReader(mFile, mBgzfThreadBudget);
-			mZipped = true;
-			readToBuf();
-			return;
-		}
+       // BGZF detection disabled for FIFO/named pipe compatibility
 
 		isal_gzip_header_init(&mGzipHeader);
 		isal_inflate_init(&mGzipState);
@@ -209,15 +202,8 @@ void FastqReader::init(){
 }
 
 void FastqReader::getBytes(size_t& bytesRead, size_t& bytesTotal) {
-	if(mZipped) {
-		bytesRead = mGzipInputUsedBytes - mGzipState.avail_in;
-	} else {
-		bytesRead = ftell(mFile);//mFile.tellg();
-	}
-	// use another ifstream to not affect current reader
-	ifstream is(mFilename);
-	is.seekg (0, is.end);
-	bytesTotal = is.tellg();
+	bytesRead = mGzipInputUsedBytes - mGzipState.avail_in;
+	bytesTotal = 0; // Unknown for FIFO input
 }
 
 void FastqReader::clearLineBreaks(char* line) {
